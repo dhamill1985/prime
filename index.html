@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+
+    <title>ULTRAPRIME</title>
+
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.28.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.28.0/mapbox-gl.css' rel='stylesheet' />
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v2.2.0/mapbox-gl-directions.js'></script>
+    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v2.2.0/mapbox-gl-directions.css' type='text/css' />
+
+    <style>
+
+        body { 
+            margin:0; 
+            padding:0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #map { 
+        	position:absolute; 
+        	top:0; 
+        	bottom:0; 
+        	width:100%; 
+        }
+
+        #header {
+            position:relative; 
+            top:30px; 
+            z-index: 1;
+            background-image: url('img/ultraprime_logo.svg');
+            background-repeat: no-repeat;
+            width: 250px;
+            height: 14px;
+            top: 20px;
+            margin: 0 auto;
+        }
+
+        #left_nav_container {
+            position: fixed;
+            top: 200px;
+            left: 10px;
+            width: 100px;
+            height: auto;
+            background-color: 'none';
+            z-index: 1;
+        }
+
+        #button {
+            position: relative;
+            float: left;
+            margin: 0;
+            width: 100%;
+            height: auto;
+            padding: 10px 10px 10px 10px;
+            border: none;
+            font-size: 14px;
+            text-transform: uppercase;
+            text-align: center;
+            color: #fff;
+            background-color: rgba(0,70,127,0);
+            cursor: pointer;
+            font-size: 11px;
+            text-align: left;
+            outline: none;
+        }
+
+        #button:hover {
+            background-color: rgba(102,255,0,.5);
+            cursor: pointer;
+        }
+
+        /* ///////////////////////////////////////////////////// MAPBOX DIRECTIONS STYLE OVERRIDE ///////////////////////////////////////////////// */
+
+        .mapbox-directions-origin .mapbox-form-label {
+		    background-color: #3bb2d0;
+		    /*border-radius: 2px 0 0 0;*/
+		    /*box-shadow: 0 1px 0 0 rgba(0,0,0,0.1);*/
+		    z-index: 1;
+		}
+
+		.mapbox-directions-inputs button {
+			padding: 0;
+			margin: 0;
+			background-color: rgba(255, 255, 255, 0.7);
+			border: none;
+			cursor: pointer;
+		}
+
+		.mapbox-directions-profile {
+			background: #fff;
+			margin: 7px 0 0;
+			padding: 2px;
+			border-radius: 15px;
+			vertical-align: middle;
+			visibility: hidden;
+		}
+
+		.directions-reverse {
+			position: absolute;
+			z-index: 10;
+			/*background: white;*/
+			right: 40px;
+			left: 300px;
+			top: 20px;
+			margin: 0; 
+			cursor: pointer;
+			visibility: hidden;
+		}
+
+		.directions-icon {
+			display: inline-block;
+			width: 20px;
+			height: 20px;
+			vertical-align: middle;
+			speak: none;
+			background-repeat: no-repeat;
+		}
+
+		.mapbox-form-label {
+			position: absolute;
+			top: 0;
+			left: 0;
+			background: #0078D2;
+			color: #fff;
+			padding: 0;
+			width: 30px;
+			height: 30px;
+			text-align: center;
+			line-height: 29px;
+			/*border-radius: 0 0 0 2px;*/
+		}
+
+		.mapboxgl-ctrl-geocoder {
+			font: 15px/20px 'Roboto', sans-serif;
+			position: relative;
+			background-color: rgba(0, 14, 27, 0.8);
+			width: calc(100% - 360px);
+			min-width: calc(100% - 30px);
+			max-width: calc(100% - 30px);
+			margin-left: 30px;
+			/*margin: 0 0 20px 0;*/
+			/*border-radius: 0 0 3px 0;*/
+		}
+
+		.mapboxgl-ctrl-geocoder input[type='text'] {
+			font-size: 12px;
+			width: 100%;
+			border: 0;
+			background-color: transparent;
+			height: 30px;
+			margin: 0;
+			color: rgba(255, 255, 255, 0.65);
+			padding: 10px 40px 10px 10px;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			overflow: hidden;
+			font-family: Roboto;
+		}
+
+		.mapbox-directions-origin input[type='text'] {
+			box-shadow: none;
+			position: relative;
+			z-index: 1;
+		}
+
+    </style>
+
+</head>
+
+<body>
+
+    <div id='map'></div>
+
+    <div id='header'></div>
+
+    <div id='left_nav_container'>
+
+        <button onclick='flyToZone1()' id='button'>Zone 1</button>
+
+        <button onclick='flyToZone2()' id='button'>Zone 2</button>
+
+        <button onclick='flyToZoneEnvoy()' id='button'>Envoy</button>
+
+        <button onclick='flyToZone3()' id='button'>Zone 3</button>
+
+        <button onclick='flyToZone4()' id='button'>Zone 4</button>
+
+        <button onclick='flyToZone5()' id='button'>Zone 5</button>
+
+        <button onclick='flyToZone6()' id='button'>Zone 6</button>
+
+        <button onclick='flyToEterm()' id='button'>E Terminal</button>
+
+        <button onclick='setPitchTo60()' id='button'>Tilt On</button>
+
+        <button onclick='setPitchTo0()' id='button'>Tilt Off</button>
+
+        <button onclick='reset()' id='button'>Reset</button>
+
+    </div>
+
+    <script>
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYW1lcmljYW5haXJsaW5lcyIsImEiOiJjaXN0YjRqNjkwMzlhMzNvYTQzcWhjenhzIn0.1HlvA1CL6VJZ5R5ylbr49w';
+    // mapboxgl.accessToken = 'pk.eyJ1IjoiYW1lcmljYW5haXJsaW5lcyIsImEiOiJjaXJja3ljOGYwMWJwZ2NtM282ZXpmam1yIn0.87Vmunpep3bo_SYWOHXuhg';
+
+    var map = new mapboxgl.Map({
+    	container: 'map',
+        // style: 'mapbox://styles/americanairlines/ciuiv99vs003y2is19i20p2w2',
+        style: 'mapbox://styles/americanairlines/ciuiv99vs003y2is19i20p2w2',
+        center: [-97.041379, 32.896294],
+        zoom: 16,
+        pitch: 70,
+        maxZoom: 21,
+		minZoom: 12,
+		attributionControl: false,
+		interactive: true,
+		bearingSnap: true,
+    });
+
+    // map.addControl(new mapboxgl.Directions());
+
+    // map.on('load', function() {
+
+    //     map.addLayer({
+    //         'id': '3d-buildings',
+    //         'source': 'composite',
+    //         'source-layer': 'building',
+    //         'filter': ['==', 'extrude', 'true'],
+    //         'type': 'fill',
+    //         'minzoom': 11,
+    //         'paint': {
+    //             'fill-color': '#002C56',
+    //             'fill-extrude-height': {
+    //                 'type': 'identity',
+    //                 'property': 'height'
+    //             },
+    //             'fill-extrude-base': {
+    //                 'type': 'identity',
+    //                 'property': 'min_height'
+    //             },
+    //             'fill-opacity': 1,
+    //             'fill-outline-color': 'hsl(208, 92%, 9%)',
+				// 'fill-antialias': true
+    //         }
+    //     });
+    // });
+
+    map.on('load', function() {
+
+        // Geojson Data source used in vector tiles, documented at
+        // https://gist.github.com/ryanbaumann/a7d970386ce59d11c16278b90dde094d
+        map.addSource("dfw", {
+            'type': 'geojson',
+            'data': 'prime/dfw.geojson'
+        });
+
+        map.addLayer({
+            'id': 'a',
+            'type': 'fill-extrusion',
+            'source': 'dfw',
+            'paint': {
+                // See the Mapbox Style Spec for details on property functions
+                // https://www.mapbox.com/mapbox-gl-style-spec/#types-function
+                'fill-extrusion-color': '#0078d2',
+                'fill-extrusion-height': {
+                    // Get fill-extrusion-height from the source 'height' property.
+                    'property': 'height',
+                    'type': 'identity'
+                },
+                'fill-extrusion-base': {
+                    // Get fill-extrusion-base from the source 'base_height' property.
+                    'property': 'min_height',
+                    'type': 'identity'
+                },
+                // Make extrusions slightly opaque for see through indoor walls.
+                'fill-extrusion-opacity': 0.3
+            }
+        });
+    });
+
+
+    function reset() {
+            map.easeTo( {
+                center: [-97.040431, 32.898236],
+                zoom: 13,
+                bearing: 0,
+                pitch: 0,
+                duration: 2000,
+            });
+        } 
+
+        function setPitchTo60() {
+            map.easeTo( {
+                pitch: 60,
+                duration: 2000,
+            });
+        } 
+
+        function setPitchTo0() {
+            map.easeTo( {
+                pitch: 0,
+                duration: 2000,
+            });
+        }
+
+        function flyToZone1() {
+            map.flyTo({
+                center: [-97.037002, 32.906389],
+                zoom: 16,
+                bearing: -154.68,
+                speed:.3,
+                curve: 1.42,
+                easeOutCubic: function (t) { return (--t)*t*t+1 },
+            });
+        }
+
+        function flyToZone2() {
+            map.flyTo( {
+                center: [-97.036663, 32.904218],
+                zoom: 16,
+                bearing: -55.23,
+                speed:.3,
+                curve: 1.42,
+                easeOutCubic: function (t) { return (--t)*t*t+1 },
+            });
+        }  
+
+        function flyToZoneEnvoy() {
+            map.flyTo( {
+                center: [-97.043620, 32.904443],
+                zoom: 16,
+                bearing: 90,
+                speed:.3,
+                curve: 1.42,
+                easeOutCubic: function (t) { return (--t)*t*t+1 },
+            });
+        } 
+
+        function flyToZone3() {
+            map.flyTo( {
+                center: [-97.036711, 32.900112],
+                zoom: 16,
+                bearing: -140.82,
+                speed:.3,
+                curve: 1.42,
+                easeOutCubic: function (t) { return (--t)*t*t+1 },
+            });
+        }  
+
+        function flyToZone4() {
+            map.flyTo( {
+                center: [-97.035759, 32.897460],
+                zoom: 16,
+                bearing: -90,
+                speed:.3,
+                curve: 1.42,
+                easeOutCubic: function (t) { return (--t)*t*t+1 },
+            });
+        } 
+
+        function flyToZone5() {
+            map.flyTo( {
+                center: [-97.036655, 32.895648],    
+                zoom: 16,
+                bearing: -42.47,
+                speed:.3,
+                curve: 1.42,
+                easeOutCubic: function (t) { return (--t)*t*t+1 },
+            });
+        } 
+
+        function flyToZone6() {
+            map.flyTo( {
+                center: [-97.044310, 32.897511],
+                zoom: 16,
+                bearing: 90,
+                speed:.3,
+                curve: 1.42,
+                easeOutCubic: function (t) { return (--t)*t*t+1 },
+            });
+        } 
+
+        function flyToEterm() {
+            map.flyTo( {
+                center: [-97.037883, 32.890359],
+                zoom: 16,
+                bearing: -90,
+                speed:.3,
+                curve: 1.42,
+                easeOutCubic: function (t) { return (--t)*t*t+1 },
+            });
+        }
+
+</script>
+
+</body>
+</html>
